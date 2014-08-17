@@ -34,7 +34,6 @@ class UdpServer
 			const boost::system::error_code& /*error*/,
 			std::size_t /*bytes_transferred*/
 		);
-		std::string makeDaytimeString();
 };
 
 

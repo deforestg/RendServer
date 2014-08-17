@@ -8,7 +8,7 @@
 #include "include/TcpServer.h"
 
 TcpServer::TcpServer(boost::asio::io_service& ioService) {
-  acceptor = new tcp::acceptor(ioService, tcp::endpoint(tcp::v4(), 13));
+  acceptor = new tcp::acceptor(ioService, tcp::endpoint(tcp::v4(), 18206));
   startAccept();
 }
 

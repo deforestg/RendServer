@@ -9,9 +9,7 @@
 
 std::string TcpConnection::makeDaytimeString()
 {
-  using namespace std; // For time_t, time and ctime;
-  time_t now = time(0);
-  return ctime(&now);
+  return "tcp";
 }
 
 TcpConnection::pointer TcpConnection::create(boost::asio::io_service& ioService)

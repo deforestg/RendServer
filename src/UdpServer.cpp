@@ -8,7 +8,7 @@
 #include "include/UdpServer.h"
 
 UdpServer::UdpServer(boost::asio::io_service& ioService) {
-  socket = new udp::socket(ioService, udp::endpoint(udp::v4(), 13));
+  socket = new udp::socket(ioService, udp::endpoint(udp::v4(), 18206));
   startReceive();
 }
 
@@ -30,17 +30,14 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 {
 	if (!error || error == boost::asio::error::message_size)
 	{
-		boost::shared_ptr<std::string> message(
-			new std::string(makeDaytimeString())
-		);
+		const void* data = (const void*)100;
 
 		socket->async_send_to(
-			boost::asio::buffer(*message),
+			boost::asio::buffer(data, sizeof(data)),
 			endpoint,
 			boost::bind(
 				&UdpServer::handleSend,
 				this,
-				message,
 				boost::asio::placeholders::error,
 				boost::asio::placeholders::bytes_transferred
 			)
@@ -55,11 +52,4 @@ void UdpServer::handleSend(
 	const boost::system::error_code& /*error*/,
 	std::size_t /*bytes_transferred*/
 ) {
-}
-
-std::string UdpServer::makeDaytimeString()
-{
-  using namespace std; // For time_t, time and ctime;
-  time_t now = time(0);
-  return ctime(&now);
 }
