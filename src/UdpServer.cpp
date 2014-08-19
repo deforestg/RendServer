@@ -30,10 +30,11 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 {
 	if (!error || error == boost::asio::error::message_size)
 	{
-		const void* data = (const void*)100;
+		int x[] = {100, 200, 300, 400, 500};
+		const char* px = reinterpret_cast<const char*>(&x);
 
 		socket->async_send_to(
-			boost::asio::buffer(data, sizeof(data)),
+			boost::asio::buffer(px, sizeof(x)),
 			endpoint,
 			boost::bind(
 				&UdpServer::handleSend,
@@ -48,7 +49,6 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 }
 
 void UdpServer::handleSend(
-	boost::shared_ptr<std::string> /*message*/,
 	const boost::system::error_code& /*error*/,
 	std::size_t /*bytes_transferred*/
 ) {

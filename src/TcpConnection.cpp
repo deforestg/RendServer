@@ -19,9 +19,11 @@ TcpConnection::pointer TcpConnection::create(boost::asio::io_service& ioService)
 
 void TcpConnection::Start()
 {
-	message = makeDaytimeString();
+//	message = makeDaytimeString();
+	int x[] = {100, 200, 300, 400, 500};
+	const char* px = reinterpret_cast<const char*>(&x);
 
-	boost::asio::async_write(socket, boost::asio::buffer(message),
+	boost::asio::async_write(socket, boost::asio::buffer(px, sizeof(x)),
 	boost::bind(&TcpConnection::handleWrite, shared_from_this(),
 	boost::asio::placeholders::error,
 	boost::asio::placeholders::bytes_transferred));

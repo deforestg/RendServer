@@ -30,7 +30,6 @@ class UdpServer
 		void startReceive();
 		void handleReceive(const boost::system::error_code& error, std::size_t /*bytes_transferred*/);
 		void handleSend(
-			boost::shared_ptr<std::string> /*message*/,
 			const boost::system::error_code& /*error*/,
 			std::size_t /*bytes_transferred*/
 		);
