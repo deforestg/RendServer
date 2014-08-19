@@ -7,11 +7,6 @@
 
 #include "include/TcpConnection.h"
 
-std::string TcpConnection::makeDaytimeString()
-{
-  return "tcp";
-}
-
 TcpConnection::pointer TcpConnection::create(boost::asio::io_service& ioService)
 {
 	return pointer(new TcpConnection(ioService));
@@ -19,7 +14,6 @@ TcpConnection::pointer TcpConnection::create(boost::asio::io_service& ioService)
 
 void TcpConnection::Start()
 {
-//	message = makeDaytimeString();
 	int x[] = {100, 200, 300, 400, 500};
 	const char* px = reinterpret_cast<const char*>(&x);
 

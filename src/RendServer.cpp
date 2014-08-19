@@ -82,7 +82,7 @@ int daemonize() {
 int main() {
 	try {
 	    boost::asio::io_service ioService;
-//	    TcpServer tcpServer(ioService);
+	    TcpServer tcpServer(ioService);
 	    UdpServer udpServer(ioService);
 
 		// Register signal handlers so that the daemon may be shut down. You may

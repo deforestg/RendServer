@@ -30,7 +30,6 @@ class TcpConnection : public boost::enable_shared_from_this<TcpConnection>
 		TcpConnection(boost::asio::io_service& ioService);
 		tcp::socket socket;
 		std::string message;
-		std::string makeDaytimeString();
 		void handleWrite(const boost::system::error_code& /*error*/, size_t /*bytes_transferred*/);
 };
 
