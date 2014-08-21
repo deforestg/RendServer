@@ -12,15 +12,19 @@ TcpConnection::pointer TcpConnection::create(boost::asio::io_service& ioService)
 	return pointer(new TcpConnection(ioService));
 }
 
-void TcpConnection::Start()
+void TcpConnection::Start(int* testLoad, int loadLength)
 {
-	int x[] = {100, 200, 300, 400, 500};
-	const char* px = reinterpret_cast<const char*>(&x);
+	const char* px = reinterpret_cast<const char*>(testLoad);
 
-	boost::asio::async_write(socket, boost::asio::buffer(px, sizeof(x)),
-	boost::bind(&TcpConnection::handleWrite, shared_from_this(),
-	boost::asio::placeholders::error,
-	boost::asio::placeholders::bytes_transferred));
+	boost::asio::async_write(
+		socket, boost::asio::buffer(px, loadLength),
+		boost::bind(
+			&TcpConnection::handleWrite,
+			shared_from_this(),
+			boost::asio::placeholders::error,
+			boost::asio::placeholders::bytes_transferred
+		)
+	);
 }
 
 TcpConnection::TcpConnection(boost::asio::io_service& ioService) : socket(ioService)

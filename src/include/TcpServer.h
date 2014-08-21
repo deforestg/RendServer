@@ -26,6 +26,8 @@ class TcpServer
 	public:
 		TcpServer(boost::asio::io_service& ioService);
 	private:
+		int loadLength;
+		int* testLoad;
 		void startAccept();
 		tcp::acceptor* acceptor;
 		void handleAccept(TcpConnection::pointer newConnection, const boost::system::error_code& error);

@@ -24,9 +24,11 @@ class UdpServer
 	public:
 	UdpServer(boost::asio::io_service& ioService);
 	private:
+		int loadLength;
+		int* testLoad;
 		udp::socket* socket;
 		udp::endpoint endpoint;
-		boost::array<char, 1> buffer;
+		boost::array<int, 512> buffer;
 		void startReceive();
 		void handleReceive(const boost::system::error_code& error, std::size_t /*bytes_transferred*/);
 		void handleSend(

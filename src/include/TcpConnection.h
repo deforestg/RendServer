@@ -22,7 +22,7 @@ using boost::asio::ip::tcp;
 class TcpConnection : public boost::enable_shared_from_this<TcpConnection>
 {
 	public:
-		void Start();
+		void Start(int* testLoad, int loadLength);
 		tcp::socket& getSocket() { return socket; }
 		typedef boost::shared_ptr<TcpConnection> pointer;
 		static pointer create(boost::asio::io_service& ioService);

@@ -8,8 +8,16 @@
 #include "include/UdpServer.h"
 
 UdpServer::UdpServer(boost::asio::io_service& ioService) {
-  socket = new udp::socket(ioService, udp::endpoint(udp::v4(), 18206));
-  startReceive();
+	socket = new udp::socket(ioService, udp::endpoint(udp::v4(), 18206));
+
+	loadLength = 250;
+	testLoad = new int[loadLength];
+	for (int i = 0; i < loadLength; i++) {
+		testLoad[i] = i;
+	}
+	loadLength *= sizeof(int);
+
+	startReceive();
 }
 
 void UdpServer::startReceive()
@@ -30,11 +38,10 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 {
 	if (!error || error == boost::asio::error::message_size)
 	{
-		int x[] = {100, 200, 300, 400, 500};
-		const char* px = reinterpret_cast<const char*>(&x);
+		const char* px = reinterpret_cast<const char*>(testLoad);
 
 		socket->async_send_to(
-			boost::asio::buffer(px, sizeof(x)),
+			boost::asio::buffer(px, loadLength),
 			endpoint,
 			boost::bind(
 				&UdpServer::handleSend,

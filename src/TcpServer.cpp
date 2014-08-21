@@ -8,8 +8,16 @@
 #include "include/TcpServer.h"
 
 TcpServer::TcpServer(boost::asio::io_service& ioService) {
-  acceptor = new tcp::acceptor(ioService, tcp::endpoint(tcp::v4(), 18206));
-  startAccept();
+	acceptor = new tcp::acceptor(ioService, tcp::endpoint(tcp::v4(), 18206));
+
+	loadLength = 250;
+	testLoad = new int[loadLength];
+	for (int i = 0; i < loadLength; i++) {
+		testLoad[i] = i;
+	}
+	loadLength *= sizeof(int);
+
+	startAccept();
 }
 
 void TcpServer::startAccept()
@@ -30,7 +38,7 @@ void TcpServer::startAccept()
 void TcpServer::handleAccept(TcpConnection::pointer newConnection, const boost::system::error_code& error)
 {
 	if (!error) {
-		newConnection->Start();
+		newConnection->Start(testLoad, loadLength);
 	}
 
 	startAccept();
