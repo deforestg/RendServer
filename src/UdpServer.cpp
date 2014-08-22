@@ -32,6 +32,12 @@ void UdpServer::startReceive()
 			boost::asio::placeholders::bytes_transferred
 		)
 	);
+
+	int* data = (int*)buffer.data();
+	for (unsigned i = 0; i < buffer.size(); i++) {
+		std::cout << data[i] << " ";
+	}
+	std::cout << std::endl;
 }
 
 void UdpServer::handleReceive(const boost::system::error_code& error, std::size_t /*bytes_transferred*/)

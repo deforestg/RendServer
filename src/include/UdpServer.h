@@ -22,13 +22,13 @@ using boost::asio::ip::udp;
 class UdpServer
 {
 	public:
-	UdpServer(boost::asio::io_service& ioService);
+		UdpServer(boost::asio::io_service& ioService);
 	private:
 		int loadLength;
 		int* testLoad;
 		udp::socket* socket;
 		udp::endpoint endpoint;
-		boost::array<int, 512> buffer;
+		boost::array<char, 512> buffer;
 		void startReceive();
 		void handleReceive(const boost::system::error_code& error, std::size_t /*bytes_transferred*/);
 		void handleSend(
