@@ -9,6 +9,7 @@
 #include "include/TcpServer.h"
 #include "include/UdpServer.h"
 #include <syslog.h>
+#define DEBUG true
 
 int daemonize() {
 	// Fork the process and have the parent exit. If the process was started
@@ -93,24 +94,28 @@ int main() {
 			boost::bind(&boost::asio::io_service::stop, &ioService)
 		);
 
-		// Inform the io_service that we are about to become a daemon. The
-		// io_service cleans up any internal resources, such as threads, that may
-		// interfere with forking.
-		ioService.notify_fork(boost::asio::io_service::fork_prepare);
+		if (DEBUG) {
+			ioService.run();
+		} else {
+			// Inform the io_service that we are about to become a daemon. The
+			// io_service cleans up any internal resources, such as threads, that may
+			// interfere with forking.
+			ioService.notify_fork(boost::asio::io_service::fork_prepare);
 
-		if (daemonize() != 0) {
-			return 1;
+			if (daemonize() != 0) {
+				return 1;
+			}
+
+			// Inform the io_service that we have finished becoming a daemon. The
+			// io_service uses this opportunity to create any internal file descriptors
+			// that need to be private to the new process.
+			ioService.notify_fork(boost::asio::io_service::fork_child);
+
+			// The io_service can now be used normally.
+			syslog(LOG_INFO | LOG_USER, "Daemon started");
+			ioService.run();
+			syslog(LOG_INFO | LOG_USER, "Daemon stopped");
 		}
-
-		// Inform the io_service that we have finished becoming a daemon. The
-		// io_service uses this opportunity to create any internal file descriptors
-		// that need to be private to the new process.
-		ioService.notify_fork(boost::asio::io_service::fork_child);
-
-		// The io_service can now be used normally.
-		syslog(LOG_INFO | LOG_USER, "Daemon started");
-		ioService.run();
-		syslog(LOG_INFO | LOG_USER, "Daemon stopped");
 	} catch (std::exception& e) {
 		syslog(LOG_ERR | LOG_USER, "Exception: %s", e.what());
 		std::cerr << "Exception: " << e.what() << std::endl;

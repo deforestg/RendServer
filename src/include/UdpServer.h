@@ -12,6 +12,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
+#include "Player.h"
 
 using namespace std;
 using boost::asio::ip::udp;
@@ -24,8 +25,10 @@ class UdpServer
 	public:
 		UdpServer(boost::asio::io_service& ioService);
 	private:
+		Player** players;
+		int numPlayers;
 		int loadLength;
-		int* testLoad;
+		char tick[sizeof(PlayerData)*MAX_PLAYERS];
 		udp::socket* socket;
 		udp::endpoint endpoint;
 		boost::array<char, 512> buffer;

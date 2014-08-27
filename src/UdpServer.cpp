@@ -9,14 +9,8 @@
 
 UdpServer::UdpServer(boost::asio::io_service& ioService) {
 	socket = new udp::socket(ioService, udp::endpoint(udp::v4(), 18206));
-
-	loadLength = 250;
-	testLoad = new int[loadLength];
-	for (int i = 0; i < loadLength; i++) {
-		testLoad[i] = i;
-	}
-	loadLength *= sizeof(int);
-
+	numPlayers = 0;
+	players = new Player*[MAX_PLAYERS];
 	startReceive();
 }
 
@@ -32,19 +26,40 @@ void UdpServer::startReceive()
 			boost::asio::placeholders::bytes_transferred
 		)
 	);
-
-	int* data = (int*)buffer.data();
-	for (unsigned i = 0; i < buffer.size(); i++) {
-		std::cout << data[i] << " ";
-	}
-	std::cout << std::endl;
 }
 
 void UdpServer::handleReceive(const boost::system::error_code& error, std::size_t /*bytes_transferred*/)
 {
+	long ip = (long)endpoint.data();
+	Player* current = NULL;
+	for (int i = 0; i < numPlayers; i++) {
+		if (players[i]->getData()->ip == ip) {	//found, now update
+			current = players[i];
+
+			char* playerLocation = tick + sizeof(PlayerData)*i;
+
+			if (buffer.size() == sizeof(PlayerData)) {
+				char* clientData = buffer.data();
+				memcpy(&playerLocation, &clientData, sizeof(PlayerData));
+			} // TODO: incomplete packet, possibly later use what we can from it
+			break;
+		}
+	}
+
+	if (current == NULL) {
+		if (numPlayers == MAX_PLAYERS) {
+			// TODO: kill connection
+		}
+
+		players[numPlayers] = new Player(ip);
+		char* playerLocation = tick + sizeof(PlayerData)*numPlayers++;
+		char* clientData = buffer.data();
+		memcpy(&playerLocation, &clientData, sizeof(PlayerData));
+	}
+
 	if (!error || error == boost::asio::error::message_size)
 	{
-		const char* px = reinterpret_cast<const char*>(testLoad);
+		const char* px = reinterpret_cast<const char*>(tick);
 
 		socket->async_send_to(
 			boost::asio::buffer(px, loadLength),
