@@ -27,7 +27,7 @@ class UdpServer
 	private:
 		Player** players;
 		int numPlayers;
-		int loadLength;
+		char autoIncrementId;
 		char tick[sizeof(PlayerData)*MAX_PLAYERS];
 		udp::socket* socket;
 		udp::endpoint endpoint;

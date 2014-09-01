@@ -5,13 +5,17 @@
  *      Author: gdeforest
  */
 
+#include <string>
+
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
 #define MAX_PLAYERS 16
 
+using namespace std;
+
 typedef struct {
-	long ip;
+	char id;
 	float position[3];
 	float look[3];
 	char health;
@@ -20,11 +24,13 @@ typedef struct {
 class Player
 {
 	public:
-		Player(long ip);
+		Player(char id, string ip);
 		void update(char* raw);
 		PlayerData* getData();
-	private:
+		string getIp() { return ip; }
+	protected:
 		PlayerData* data;
+		string ip;// 45 chars (bytes) is max ipv6 length
 };
 
 #endif /* PLAYER_H_ */

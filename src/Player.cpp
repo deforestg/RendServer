@@ -7,10 +7,11 @@
 
 #include "include/Player.h"
 
-Player::Player(long ip)
+Player::Player(char id, string ip)
 {
+	this->ip = ip;
 	data = new PlayerData();
-	data->ip = ip;
+	data->id = id;
 	data->health = 100;
 }
 

@@ -9,7 +9,7 @@
 #include "include/TcpServer.h"
 #include "include/UdpServer.h"
 #include <syslog.h>
-#define DEBUG true
+#define DEBUG false
 
 int daemonize() {
 	// Fork the process and have the parent exit. If the process was started
