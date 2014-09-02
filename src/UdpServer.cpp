@@ -51,7 +51,7 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 
 			if (bytes_transferred == sizeof(PlayerData)) {
 				char* clientData = buffer.data();
-				memcpy(&playerLocation, &clientData, sizeof(PlayerData));
+				memcpy(playerLocation, clientData, sizeof(PlayerData));
 			} // TODO: incomplete packet, possibly later use what we can from it
 
 			break;
