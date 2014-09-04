@@ -10,7 +10,7 @@
 UdpServer::UdpServer(boost::asio::io_service& ioService) {
 	socket = new udp::socket(ioService, udp::endpoint(udp::v4(), 18206));
 	numPlayers = 0;
-	autoIncrementId = 0;
+	autoIncrementId = 1;
 	players = new Player*[MAX_PLAYERS];
 	startReceive();
 }
@@ -44,14 +44,16 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 	for (int i = 0; i < numPlayers; i++) {
 		string playerIp = players[i]->getIp();
 
-		if (playerIp.compare(currentIp) == 0) {	//found, now update
+		PlayerData* player = (PlayerData*)(tick + sizeof(PlayerData)*i);
+
+		if (playerIp.compare(currentIp) == 0 && player->id == players[i]->getData()->id) {	//found, now update
 			current = players[i];
 
-			char* playerLocation = tick + sizeof(PlayerData)*i;
-
 			if (bytes_transferred == sizeof(PlayerData)) {
+				char playerId = players[i]->getData()->id;
 				char* clientData = buffer.data();
-				memcpy(playerLocation, clientData, sizeof(PlayerData));
+				memcpy(player, clientData, sizeof(PlayerData));
+				player->id = playerId;	// client cannot change their id
 			} // TODO: incomplete packet, possibly later use what we can from it
 
 			break;
@@ -61,6 +63,7 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 	if (current == NULL) {
 		if (numPlayers == MAX_PLAYERS) {
 			// TODO: kill connection
+			return;
 		}
 
 		players[numPlayers] = new Player(autoIncrementId++, currentIp);

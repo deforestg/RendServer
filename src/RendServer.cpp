@@ -6,9 +6,10 @@
 // Description : Rend Server main file
 //============================================================================
 
-#include "include/TcpServer.h"
-#include "include/UdpServer.h"
+#include "include/GameManager.h"
 #include <syslog.h>
+#include <boost/asio.hpp>
+
 #define DEBUG false
 
 int daemonize() {
@@ -82,19 +83,14 @@ int daemonize() {
 
 int main() {
 	try {
-	    boost::asio::io_service ioService;
-	    TcpServer tcpServer(ioService);
-	    UdpServer udpServer(ioService);
+		boost::asio::io_service ioService;
 
-		// Register signal handlers so that the daemon may be shut down. You may
-		// also want to register for other signals, such as SIGHUP to trigger a
-		// re-read of a configuration file.
-		boost::asio::signal_set signals(ioService, SIGINT, SIGTERM);
-		signals.async_wait(
-			boost::bind(&boost::asio::io_service::stop, &ioService)
-		);
+//		GameManager* game = new GameManager(ioService);
+		TcpServer tcpServer(ioService);
+		UdpServer udpServer(ioService);
 
 		if (DEBUG) {
+//			game->start();
 			ioService.run();
 		} else {
 			// Inform the io_service that we are about to become a daemon. The
@@ -106,15 +102,13 @@ int main() {
 				return 1;
 			}
 
+//			game->start();
+
 			// Inform the io_service that we have finished becoming a daemon. The
 			// io_service uses this opportunity to create any internal file descriptors
 			// that need to be private to the new process.
 			ioService.notify_fork(boost::asio::io_service::fork_child);
-
-			// The io_service can now be used normally.
-			syslog(LOG_INFO | LOG_USER, "Daemon started");
 			ioService.run();
-			syslog(LOG_INFO | LOG_USER, "Daemon stopped");
 		}
 	} catch (std::exception& e) {
 		syslog(LOG_ERR | LOG_USER, "Exception: %s", e.what());
