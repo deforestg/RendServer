@@ -88,7 +88,7 @@ int main() {
 		GameManager* game = new GameManager(ioService);
 
 		if (DEBUG) {
-			game->start();
+			game->Start();
 			ioService.run();
 		} else {
 			// Register signal handlers so that the daemon may be shut down. You may
@@ -108,7 +108,7 @@ int main() {
 				return 1;
 			}
 
-			game->start();
+			game->Start();
 
 			// Inform the io_service that we have finished becoming a daemon. The
 			// io_service uses this opportunity to create any internal file descriptors

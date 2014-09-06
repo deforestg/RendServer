@@ -5,6 +5,9 @@
  *      Author: gdeforest
  */
 
+#ifndef TCPSERVER_H_
+#define TCPSERVER_H_
+
 #include <ctime>
 #include <iostream>
 #include <string>
@@ -18,8 +21,7 @@
 
 using boost::asio::ip::tcp;
 
-#ifndef TCPSERVER_H_
-#define TCPSERVER_H_
+class GameManager;
 
 class TcpServer
 {

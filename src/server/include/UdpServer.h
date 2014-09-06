@@ -5,6 +5,9 @@
  *      Author: gdeforest
  */
 
+#ifndef UDPSERVER_H_
+#define UDPSERVER_H_
+
 #include <ctime>
 #include <iostream>
 #include <string>
@@ -18,8 +21,7 @@
 using namespace std;
 using boost::asio::ip::udp;
 
-#ifndef UDPSERVER_H_
-#define UDPSERVER_H_
+class GameManager;
 
 class UdpServer
 {
@@ -27,7 +29,7 @@ class UdpServer
 		UdpServer(boost::asio::io_service& ioService, GameManager* gm);
 	private:
 		GameManager* gm;
-		char tick[sizeof(PlayerData)*MAX_PLAYERS];
+		char *tick;
 		udp::socket* socket;
 		udp::endpoint endpoint;
 		boost::array<char, 512> buffer;

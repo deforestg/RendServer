@@ -9,6 +9,7 @@
 
 UdpServer::UdpServer(boost::asio::io_service& ioService, GameManager* gm) {
 	this->gm = gm;
+	tick = gm->GetGamestate();
 	socket = new udp::socket(ioService, udp::endpoint(udp::v4(), 18206));
 	startReceive();
 }
@@ -50,10 +51,8 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 			current = players[i];
 
 			if (bytes_transferred == sizeof(PlayerData)) {
-				char playerId = players[i]->getData()->id;
-				char* clientData = buffer.data();
-				memcpy(player, clientData, sizeof(PlayerData));
-				player->id = playerId;	// client cannot change their id
+				players[i]->update(buffer.data());
+				memcpy(player, players[i]->getData(), sizeof(PlayerData));
 			}
 
 			break;

@@ -5,10 +5,11 @@
  *      Author: gdeforest
  */
 
-#include <string>
-
 #ifndef PLAYER_H_
 #define PLAYER_H_
+
+#include <string>
+#include <sys/time.h>
 
 using namespace std;
 
@@ -26,7 +27,9 @@ class Player
 		void update(char* raw);
 		PlayerData* getData();
 		string getIp() { return ip; }
+		timeval* LastUpdated() { return &updated; }
 	protected:
+		timeval updated;
 		PlayerData* data;
 		string ip;// 45 chars (bytes) is max ipv6 length
 };
