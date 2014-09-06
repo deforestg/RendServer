@@ -13,6 +13,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
 #include "../../include/Player.h"
+#include "../../include/GameManager.h"
 
 using namespace std;
 using boost::asio::ip::udp;
@@ -23,11 +24,9 @@ using boost::asio::ip::udp;
 class UdpServer
 {
 	public:
-		UdpServer(boost::asio::io_service& ioService);
+		UdpServer(boost::asio::io_service& ioService, GameManager* gm);
 	private:
-		Player** players;
-		int numPlayers;
-		char autoIncrementId;
+		GameManager* gm;
 		char tick[sizeof(PlayerData)*MAX_PLAYERS];
 		udp::socket* socket;
 		udp::endpoint endpoint;

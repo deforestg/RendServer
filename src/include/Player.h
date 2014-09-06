@@ -10,8 +10,6 @@
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
-#define MAX_PLAYERS 16
-
 using namespace std;
 
 typedef struct {

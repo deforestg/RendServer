@@ -7,15 +7,9 @@
 
 #include "include/TcpServer.h"
 
-TcpServer::TcpServer(boost::asio::io_service& ioService) {
+TcpServer::TcpServer(boost::asio::io_service& ioService, GameManager* gm) {
+	this->gm = gm;
 	acceptor = new tcp::acceptor(ioService, tcp::endpoint(tcp::v4(), 18206));
-
-	loadLength = 250;
-	testLoad = new int[loadLength];
-	for (int i = 0; i < loadLength; i++) {
-		testLoad[i] = i;
-	}
-	loadLength *= sizeof(int);
 
 	startAccept();
 }
@@ -37,8 +31,12 @@ void TcpServer::startAccept()
 
 void TcpServer::handleAccept(TcpConnection::pointer newConnection, const boost::system::error_code& error)
 {
+	char* message = "test";
+
+	gm->AcceptJoin((char*)newConnection->getSocket().remote_endpoint().address().to_string().c_str());
+
 	if (!error) {
-		newConnection->Start(testLoad, loadLength);
+		newConnection->Start(message, sizeof(message));
 	}
 
 	startAccept();

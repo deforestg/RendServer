@@ -22,14 +22,13 @@ using boost::asio::ip::tcp;
 class TcpConnection : public boost::enable_shared_from_this<TcpConnection>
 {
 	public:
-		void Start(int* testLoad, int loadLength);
+		void Start(char* message, int loadLength);
 		tcp::socket& getSocket() { return socket; }
 		typedef boost::shared_ptr<TcpConnection> pointer;
 		static pointer create(boost::asio::io_service& ioService);
 	private:
 		TcpConnection(boost::asio::io_service& ioService);
 		tcp::socket socket;
-		std::string message;
 		void handleWrite(const boost::system::error_code& /*error*/, size_t /*bytes_transferred*/);
 };
 

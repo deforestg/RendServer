@@ -10,7 +10,7 @@
 #include <syslog.h>
 #include <boost/asio.hpp>
 
-#define DEBUG false
+#define DEBUG true
 
 int daemonize() {
 	// Fork the process and have the parent exit. If the process was started
@@ -85,14 +85,20 @@ int main() {
 	try {
 		boost::asio::io_service ioService;
 
-//		GameManager* game = new GameManager(ioService);
-		TcpServer tcpServer(ioService);
-		UdpServer udpServer(ioService);
+		GameManager* game = new GameManager(ioService);
 
 		if (DEBUG) {
-//			game->start();
+			game->start();
 			ioService.run();
 		} else {
+			// Register signal handlers so that the daemon may be shut down. You may
+			// also want to register for other signals, such as SIGHUP to trigger a
+			// re-read of a configuration file.
+			boost::asio::signal_set signals(ioService, SIGINT, SIGTERM);
+			signals.async_wait(
+				boost::bind(&boost::asio::io_service::stop, &ioService)
+			);
+
 			// Inform the io_service that we are about to become a daemon. The
 			// io_service cleans up any internal resources, such as threads, that may
 			// interfere with forking.
@@ -102,7 +108,7 @@ int main() {
 				return 1;
 			}
 
-//			game->start();
+			game->start();
 
 			// Inform the io_service that we have finished becoming a daemon. The
 			// io_service uses this opportunity to create any internal file descriptors

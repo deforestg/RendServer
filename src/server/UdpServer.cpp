@@ -7,11 +7,9 @@
 
 #include "include/UdpServer.h"
 
-UdpServer::UdpServer(boost::asio::io_service& ioService) {
+UdpServer::UdpServer(boost::asio::io_service& ioService, GameManager* gm) {
+	this->gm = gm;
 	socket = new udp::socket(ioService, udp::endpoint(udp::v4(), 18206));
-	numPlayers = 0;
-	autoIncrementId = 1;
-	players = new Player*[MAX_PLAYERS];
 	startReceive();
 }
 
@@ -40,8 +38,10 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 		currentIp = addr.to_v6().to_string();
 	}
 
+	Player** players = gm->GetPlayers();
 	Player* current = NULL;
-	for (int i = 0; i < numPlayers; i++) {
+
+	for (int i = 0; i < gm->GetNumPlayers(); i++) {
 		string playerIp = players[i]->getIp();
 
 		PlayerData* player = (PlayerData*)(tick + sizeof(PlayerData)*i);
@@ -54,22 +54,15 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 				char* clientData = buffer.data();
 				memcpy(player, clientData, sizeof(PlayerData));
 				player->id = playerId;	// client cannot change their id
-			} // TODO: incomplete packet, possibly later use what we can from it
+			}
 
 			break;
 		}
 	}
 
-	if (current == NULL) {
-		if (numPlayers == MAX_PLAYERS) {
-			// TODO: kill connection
-			return;
-		}
-
-		players[numPlayers] = new Player(autoIncrementId++, currentIp);
-		char* playerLocation = tick + sizeof(PlayerData)*numPlayers;
-		PlayerData* newPlayer = players[numPlayers++]->getData();
-		memcpy(playerLocation, newPlayer, sizeof(PlayerData));
+	if (current == NULL) {	// not joined yet so stop this now
+		startReceive();
+		return;
 	}
 
 	if (!error || error == boost::asio::error::message_size)
@@ -77,7 +70,7 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 		const char* px = reinterpret_cast<const char*>(tick);
 
 		socket->async_send_to(
-			boost::asio::buffer(px, sizeof(PlayerData)*numPlayers),
+			boost::asio::buffer(px, sizeof(PlayerData)*gm->GetNumPlayers()),
 			endpoint,
 			boost::bind(
 				&UdpServer::handleSend,

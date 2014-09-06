@@ -13,9 +13,9 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
 
+#include "../../include/GameManager.h"
 #include "TcpConnection.h"
 
-using namespace std;
 using boost::asio::ip::tcp;
 
 #ifndef TCPSERVER_H_
@@ -24,10 +24,9 @@ using boost::asio::ip::tcp;
 class TcpServer
 {
 	public:
-		TcpServer(boost::asio::io_service& ioService);
+		TcpServer(boost::asio::io_service& ioService, GameManager* gm);
 	private:
-		int loadLength;
-		int* testLoad;
+		GameManager* gm;
 		void startAccept();
 		tcp::acceptor* acceptor;
 		void handleAccept(TcpConnection::pointer newConnection, const boost::system::error_code& error);
