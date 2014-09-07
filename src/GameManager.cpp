@@ -84,17 +84,22 @@ void GameManager::RemovePlayer(int index) {
  * called from the tcp server TODO: put in mutex, add leaves
  */
 char GameManager::AcceptJoin(string ip) {
+
+	pthread_mutex_lock(&playerLock);
+
 	if (numPlayers == MAX_PLAYERS) {
 		// TODO: kill connection
 		return 0;
 	}
 
-	players[numPlayers] = new Player(autoIncrementId, ip);
+	players[numPlayers] = new Player(++autoIncrementId, ip);
 	char* playerLocation = gamestate + sizeof(PlayerData)*numPlayers;
 	PlayerData* newPlayer = players[numPlayers++]->getData();
 	memcpy(playerLocation, newPlayer, sizeof(PlayerData));
 
-	return autoIncrementId++;
+	pthread_mutex_unlock(&playerLock);
+
+	return autoIncrementId;
 }
 
 GameManager::~GameManager() {

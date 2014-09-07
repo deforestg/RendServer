@@ -15,6 +15,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <pthread.h>
+
 #include "../server/include/TcpServer.h"
 #include "../server/include/UdpServer.h"
 
@@ -23,6 +24,7 @@ class UdpServer;
 
 class GameManager {
 	private:
+		pthread_mutex_t playerLock;
 		char gamestate[sizeof(PlayerData)*MAX_PLAYERS];
 		boost::asio::io_service* ioService;
 		TcpServer* tcpServer;

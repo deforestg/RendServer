@@ -14,9 +14,6 @@ TcpConnection::pointer TcpConnection::create(boost::asio::io_service& ioService)
 
 void TcpConnection::Start(char* message, int loadLength)
 {
-//	std::cout << socket.remote_endpoint().address().to_string();
-//	std::cout << std::endl;
-
 	const char* px = reinterpret_cast<const char*>(message);
 
 	boost::asio::async_write(
