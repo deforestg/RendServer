@@ -25,6 +25,11 @@ GameManager::GameManager(boost::asio::io_service& ioService) {
  * starts main game thread
  */
 void GameManager::Start() {
+	if (pthread_mutex_init(&playerLock, NULL) != 0) {
+		cout << "mutex init failed" << endl;
+		exit(-1);
+	}
+
 	pthread_t thread;
 	if (pthread_create(&thread, NULL, &GameManager::RunHelper, this)){
 		cout << "Error:unable to create thread" << endl;
@@ -66,6 +71,8 @@ void GameManager::CheckTimeouts(timeval* now) {
 		if (now->tv_sec - updated->tv_sec >= TIMEOUT) {
 			RemovePlayer(i);
 		}
+
+		i++;
 	}
 }
 
@@ -73,26 +80,33 @@ void GameManager::CheckTimeouts(timeval* now) {
  * keeps the players array coalesced
  */
 void GameManager::RemovePlayer(int index) {
+
+	pthread_mutex_lock(&playerLock);
+
 	if (index == (numPlayers - 1)) {
 		numPlayers--;
 	} else {
-		players[index] = players[numPlayers-- - 1];
+		players[index] = players[--numPlayers];
 	}
+
+	pthread_mutex_unlock(&playerLock);
 }
 
 /**
- * called from the tcp server TODO: put in mutex, add leaves
+ * players join over tcp
+ * @see TcpServer
  */
 char GameManager::AcceptJoin(string ip) {
 
 	pthread_mutex_lock(&playerLock);
 
 	if (numPlayers == MAX_PLAYERS) {
-		// TODO: kill connection
+		cout << "connection refused" << endl;
+		pthread_mutex_unlock(&playerLock);
 		return 0;
 	}
 
-	players[numPlayers] = new Player(++autoIncrementId, ip);
+	players[numPlayers] = new Player(autoIncrementId++, ip);
 	char* playerLocation = gamestate + sizeof(PlayerData)*numPlayers;
 	PlayerData* newPlayer = players[numPlayers++]->getData();
 	memcpy(playerLocation, newPlayer, sizeof(PlayerData));
@@ -106,5 +120,6 @@ GameManager::~GameManager() {
 	delete tcpServer;
 	delete udpServer;
 	delete players;
+	pthread_mutex_destroy(&playerLock);
 }
 

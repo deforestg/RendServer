@@ -31,9 +31,9 @@ void TcpServer::startAccept()
 
 void TcpServer::handleAccept(TcpConnection::pointer newConnection, const boost::system::error_code& error)
 {
-	char id = gm->AcceptJoin(newConnection->getSocket().remote_endpoint().address().to_string());
-
 	if (!error) {
+		char id = gm->AcceptJoin(newConnection->getSocket().remote_endpoint().address().to_string());
+
 		newConnection->Start(&id, sizeof(id));
 	}
 
