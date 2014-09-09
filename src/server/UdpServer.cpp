@@ -52,7 +52,6 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 
 			if (bytes_transferred == sizeof(PlayerData)) {
 				players[i]->update(buffer.data());
-				players[i]->getData()->look[0]++;
 				memcpy(player, players[i]->getData(), sizeof(PlayerData));
 			}
 
