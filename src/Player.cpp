@@ -7,10 +7,10 @@
 
 #include "include/Player.h"
 
-Player::Player(char id, string ip)
+Player::Player(char id, string ip, PlayerData* dataStruct)
 {
 	this->ip = ip;
-	data = new PlayerData();
+	data = dataStruct;
 	data->id = id;
 	data->health = 100;
 	gettimeofday(&updated, NULL);

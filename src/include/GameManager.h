@@ -20,8 +20,7 @@
 
 typedef struct {
 	int ticker;
-	char numPlayers;
-	PlayerData* playersData[MAX_PLAYERS];
+	PlayerData playersData[MAX_PLAYERS];
 } Tick;
 
 #include "../server/include/TcpServer.h"
@@ -33,10 +32,11 @@ class UdpServer;
 class GameManager {
 	private:
 		pthread_mutex_t playerLock;
-		Tick* gamestate;
 		boost::asio::io_service* ioService;
 		TcpServer* tcpServer;
 		UdpServer* udpServer;
+		Tick* gamestate;
+		int numPlayers;
 		char autoIncrementId;
 		Player** players;
 		void CheckTimeouts(timeval* now);
@@ -47,7 +47,7 @@ class GameManager {
 		Tick* GetGamestate() { return gamestate; }
 		int GetTick() { return gamestate->ticker; }
 		Player** GetPlayers() { return players; };
-		char GetNumPlayers() { return gamestate->numPlayers; };
+		int GetNumPlayers() { return numPlayers; };
 		GameManager(boost::asio::io_service& ioService);
 		void Start();
 		char AcceptJoin(string ip);

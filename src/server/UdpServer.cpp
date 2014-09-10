@@ -67,7 +67,7 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 		const char* px = reinterpret_cast<const char*>(tick);
 
 		socket->async_send_to(
-			boost::asio::buffer(px, sizeof(PlayerData)*gm->GetNumPlayers()),
+			boost::asio::buffer(px, sizeof(int) + sizeof(PlayerData)*gm->GetNumPlayers()),
 			endpoint,
 			boost::bind(
 				&UdpServer::handleSend,

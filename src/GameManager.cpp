@@ -13,13 +13,10 @@
 GameManager::GameManager(boost::asio::io_service& ioService) {
 	autoIncrementId = 1;
 	gamestate = new Tick();
-	gamestate->numPlayers = 0;
 	gamestate->ticker = 0;
 
+	numPlayers = 0;
 	players = new Player*[MAX_PLAYERS];
-	for (int i = 0; i < MAX_PLAYERS; i++) {
-		gamestate->playersData[i] = players[i]->getData();
-	}
 
 	this->ioService = &ioService;
     tcpServer = new TcpServer(ioService, this);
@@ -70,7 +67,7 @@ void GameManager::Run() {
  * checks for player timeouts by comparing last update timestamps to now
  */
 void GameManager::CheckTimeouts(timeval* now) {
-	for (int i = 0; i < gamestate->numPlayers; i++) {
+	for (int i = 0; i < numPlayers; i++) {
 		timeval* updated = players[i]->LastUpdated();
 
 		if (now->tv_sec - updated->tv_sec >= TIMEOUT) {
@@ -88,10 +85,10 @@ void GameManager::RemovePlayer(int index) {
 
 	pthread_mutex_lock(&playerLock);
 
-	if (index == (gamestate->numPlayers - 1)) {
-		gamestate->numPlayers--;
+	if (index == (numPlayers - 1)) {
+		numPlayers--;
 	} else {
-		players[index] = players[(int)--gamestate->numPlayers];
+		players[index] = players[--numPlayers];
 	}
 
 	pthread_mutex_unlock(&playerLock);
@@ -105,18 +102,14 @@ char GameManager::AcceptJoin(string ip) {
 
 	pthread_mutex_lock(&playerLock);
 
-	if (gamestate->numPlayers == MAX_PLAYERS) {
+	if (numPlayers == MAX_PLAYERS) {
 		cout << "connection refused" << endl;
 		pthread_mutex_unlock(&playerLock);
 		return 0;
 	}
 
-	int numPlayers = (int)gamestate->numPlayers;
-
-	players[numPlayers] = new Player(autoIncrementId++, ip);
-	PlayerData* newPlayer = players[numPlayers]->getData();
-	gamestate->playersData[numPlayers] = newPlayer;
-	gamestate->numPlayers++;
+	players[numPlayers] = new Player(autoIncrementId++, ip, &gamestate->playersData[numPlayers]);
+	numPlayers++;
 
 	pthread_mutex_unlock(&playerLock);
 

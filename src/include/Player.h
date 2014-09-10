@@ -27,7 +27,7 @@ typedef struct {
 class Player
 {
 	public:
-		Player(char id, string ip);
+		Player(char id, string ip, PlayerData* dataStruct);
 		void update(PlayerData* newData);
 		PlayerData* getData();
 		string getIp() { return ip; }
