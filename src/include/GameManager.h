@@ -16,6 +16,14 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#include "Player.h"
+
+typedef struct {
+	int ticker;
+	char numPlayers;
+	PlayerData* playersData[MAX_PLAYERS];
+} Tick;
+
 #include "../server/include/TcpServer.h"
 #include "../server/include/UdpServer.h"
 
@@ -25,26 +33,28 @@ class UdpServer;
 class GameManager {
 	private:
 		pthread_mutex_t playerLock;
-		char gamestate[sizeof(PlayerData)*MAX_PLAYERS];
+		Tick* gamestate;
 		boost::asio::io_service* ioService;
 		TcpServer* tcpServer;
 		UdpServer* udpServer;
-		Player** players;
-		int numPlayers;
 		char autoIncrementId;
-		long gameTicker;
+		Player** players;
 		void CheckTimeouts(timeval* now);
 		void RemovePlayer(int index);
 		static void* RunHelper(void *context);
 		void Run();
 	public:
-		char* GetGamestate() { return gamestate; }
+		Tick* GetGamestate() { return gamestate; }
+		int GetTick() { return gamestate->ticker; }
+		Player** GetPlayers() { return players; };
+		char GetNumPlayers() { return gamestate->numPlayers; };
 		GameManager(boost::asio::io_service& ioService);
 		void Start();
-		Player** GetPlayers() { return players; };
-		int GetNumPlayers() { return numPlayers; };
 		char AcceptJoin(string ip);
 		virtual ~GameManager();
 };
+
+
+
 
 #endif /* GAMEMANAGER_H_ */

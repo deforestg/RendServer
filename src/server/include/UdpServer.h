@@ -15,7 +15,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
-#include "../../include/Player.h"
+
 #include "../../include/GameManager.h"
 
 using namespace std;
@@ -29,7 +29,7 @@ class UdpServer
 		UdpServer(boost::asio::io_service& ioService, GameManager* gm);
 	private:
 		GameManager* gm;
-		char *tick;
+		Tick *tick;
 		udp::socket* socket;
 		udp::endpoint endpoint;
 		boost::array<char, 512> buffer;

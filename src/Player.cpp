@@ -16,10 +16,9 @@ Player::Player(char id, string ip)
 	gettimeofday(&updated, NULL);
 }
 
-void Player::update(char* raw)
+void Player::update(PlayerData* newData)
 {
 	char playerId = data->id;
-	data = (PlayerData*)raw;
 	data->id = playerId;	// client cannot change their id
 	gettimeofday(&updated, NULL);
 }

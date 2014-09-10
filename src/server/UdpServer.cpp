@@ -30,42 +30,40 @@ void UdpServer::startReceive()
 
 void UdpServer::handleReceive(const boost::system::error_code& error, std::size_t bytes_transferred)
 {
-	string currentIp;
-	boost::asio::ip::address addr = endpoint.address();
-
-	if (addr.is_v4()) {
-		currentIp = addr.to_v4().to_string();
-	} else {
-		currentIp = addr.to_v6().to_string();
-	}
-
-	Player** players = gm->GetPlayers();
-	Player* current = NULL;
-
-	for (int i = 0; i < gm->GetNumPlayers(); i++) {
-		string playerIp = players[i]->getIp();
-
-		PlayerData* player = (PlayerData*)(tick + sizeof(PlayerData)*i);
-
-		if (playerIp.compare(currentIp) == 0 && player->id == players[i]->getData()->id) {	//found, now update
-			current = players[i];
-
-			if (bytes_transferred == sizeof(PlayerData)) {
-				players[i]->update(buffer.data());
-				memcpy(player, players[i]->getData(), sizeof(PlayerData));
-			}
-
-			break;
-		}
-	}
-
-	if (current == NULL) {	// not joined yet so stop this now
-		startReceive();
-		return;
-	}
-
 	if (!error || error == boost::asio::error::message_size)
 	{
+		string currentIp;
+		boost::asio::ip::address addr = endpoint.address();
+
+		if (addr.is_v4()) {
+			currentIp = addr.to_v4().to_string();
+		} else {
+			currentIp = addr.to_v6().to_string();
+		}
+
+		Player** players = gm->GetPlayers();
+		Player* current = NULL;
+		PlayerData* update = (PlayerData*) buffer.data();
+
+		for (int i = 0; i < gm->GetNumPlayers(); i++) {
+			string playerIp = players[i]->getIp();
+
+			if (playerIp.compare(currentIp) == 0 && update->id == players[i]->getData()->id) {	//found, now update
+				current = players[i];
+
+				if (bytes_transferred == sizeof(PlayerData)) {
+					players[i]->update(update);
+				}
+
+				break;
+			}
+		}
+
+		if (current == NULL) {	// not formally joined so stop this now
+			startReceive();
+			return;
+		}
+
 		const char* px = reinterpret_cast<const char*>(tick);
 
 		socket->async_send_to(

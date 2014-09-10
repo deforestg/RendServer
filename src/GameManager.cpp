@@ -11,10 +11,15 @@
  * initialize game data and udp and tcp listeners
  */
 GameManager::GameManager(boost::asio::io_service& ioService) {
-	numPlayers = 0;
 	autoIncrementId = 1;
+	gamestate = new Tick();
+	gamestate->numPlayers = 0;
+	gamestate->ticker = 0;
+
 	players = new Player*[MAX_PLAYERS];
-	gameTicker = 0;
+	for (int i = 0; i < MAX_PLAYERS; i++) {
+		gamestate->playersData[i] = players[i]->getData();
+	}
 
 	this->ioService = &ioService;
     tcpServer = new TcpServer(ioService, this);
@@ -49,7 +54,7 @@ void GameManager::Run() {
 	for (;;) {
 		gettimeofday(&start, NULL);
 
-		if (gameTicker++ % RATE == 0) {	// check every second for timeouts
+		if (gamestate->ticker++ % RATE == 0) {	// check every second for timeouts
 			CheckTimeouts(&start);
 		}
 
@@ -65,7 +70,7 @@ void GameManager::Run() {
  * checks for player timeouts by comparing last update timestamps to now
  */
 void GameManager::CheckTimeouts(timeval* now) {
-	for (int i = 0; i < numPlayers; i++) {
+	for (int i = 0; i < gamestate->numPlayers; i++) {
 		timeval* updated = players[i]->LastUpdated();
 
 		if (now->tv_sec - updated->tv_sec >= TIMEOUT) {
@@ -83,10 +88,10 @@ void GameManager::RemovePlayer(int index) {
 
 	pthread_mutex_lock(&playerLock);
 
-	if (index == (numPlayers - 1)) {
-		numPlayers--;
+	if (index == (gamestate->numPlayers - 1)) {
+		gamestate->numPlayers--;
 	} else {
-		players[index] = players[--numPlayers];
+		players[index] = players[(int)--gamestate->numPlayers];
 	}
 
 	pthread_mutex_unlock(&playerLock);
@@ -100,16 +105,18 @@ char GameManager::AcceptJoin(string ip) {
 
 	pthread_mutex_lock(&playerLock);
 
-	if (numPlayers == MAX_PLAYERS) {
+	if (gamestate->numPlayers == MAX_PLAYERS) {
 		cout << "connection refused" << endl;
 		pthread_mutex_unlock(&playerLock);
 		return 0;
 	}
 
+	int numPlayers = (int)gamestate->numPlayers;
+
 	players[numPlayers] = new Player(autoIncrementId++, ip);
-	char* playerLocation = gamestate + sizeof(PlayerData)*numPlayers;
-	PlayerData* newPlayer = players[numPlayers++]->getData();
-	memcpy(playerLocation, newPlayer, sizeof(PlayerData));
+	PlayerData* newPlayer = players[numPlayers]->getData();
+	gamestate->playersData[numPlayers] = newPlayer;
+	gamestate->numPlayers++;
 
 	pthread_mutex_unlock(&playerLock);
 

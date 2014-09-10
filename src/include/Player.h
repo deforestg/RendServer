@@ -17,14 +17,18 @@ typedef struct {
 	char id;
 	float position[3];
 	float look[3];
+	short playerState;
 	char health;
+	char weaponId;
+	short weaponState;
+	char pullingTrigger;
 } PlayerData;
 
 class Player
 {
 	public:
 		Player(char id, string ip);
-		void update(char* raw);
+		void update(PlayerData* newData);
 		PlayerData* getData();
 		string getIp() { return ip; }
 		timeval* LastUpdated() { return &updated; }
