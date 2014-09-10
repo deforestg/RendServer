@@ -43,6 +43,7 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 
 		Player** players = gm->GetPlayers();
 		Player* current = NULL;
+
 		PlayerData* update = (PlayerData*) buffer.data();
 
 		for (int i = 0; i < gm->GetNumPlayers(); i++) {
@@ -59,15 +60,18 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 			}
 		}
 
-		if (current == NULL) {	// not formally joined so stop this now
-			startReceive();
-			return;
+		char* px;
+		int sendLen;
+		if (current == NULL) {	// not formally joined so send back nothing
+			px = new char[1];
+			sendLen = 1;
+		} else {
+			px = reinterpret_cast<char*>(tick);
+			sendLen = sizeof(int) + sizeof(PlayerData)*gm->GetNumPlayers();
 		}
 
-		const char* px = reinterpret_cast<const char*>(tick);
-
 		socket->async_send_to(
-			boost::asio::buffer(px, sizeof(int) + sizeof(PlayerData)*gm->GetNumPlayers()),
+			boost::asio::buffer(px, sendLen),
 			endpoint,
 			boost::bind(
 				&UdpServer::handleSend,

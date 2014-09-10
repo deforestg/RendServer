@@ -108,12 +108,12 @@ char GameManager::AcceptJoin(string ip) {
 		return 0;
 	}
 
-	players[numPlayers] = new Player(autoIncrementId++, ip, &gamestate->playersData[numPlayers]);
+	players[numPlayers] = new Player(autoIncrementId, ip, &gamestate->playersData[numPlayers]);
 	numPlayers++;
 
 	pthread_mutex_unlock(&playerLock);
 
-	return autoIncrementId;
+	return autoIncrementId++;
 }
 
 GameManager::~GameManager() {
