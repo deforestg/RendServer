@@ -10,7 +10,7 @@
 
 #define RATE 128		// ticks/s
 #define MAX_PLAYERS 16
-#define TIMEOUT 2		// seconds
+#define TIMEOUT 10		// seconds
 
 #include <sys/time.h>
 #include <unistd.h>
