@@ -67,7 +67,7 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 			sendLen = 1;
 		} else {
 			px = reinterpret_cast<char*>(tick);
-			sendLen = sizeof(int) + sizeof(PlayerData)*gm->GetNumPlayers();
+			sendLen = sizeof(unsigned int) + sizeof(PlayerData)*gm->GetNumPlayers();
 		}
 
 		socket->async_send_to(

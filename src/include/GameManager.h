@@ -19,7 +19,7 @@
 #include "Player.h"
 
 typedef struct {
-	int ticker;
+	unsigned int ticker;
 	PlayerData playersData[MAX_PLAYERS];
 } Tick;
 

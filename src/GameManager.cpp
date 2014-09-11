@@ -73,8 +73,6 @@ void GameManager::CheckTimeouts(timeval* now) {
 		if (now->tv_sec - updated->tv_sec >= TIMEOUT) {
 			RemovePlayer(i);
 		}
-
-		i++;
 	}
 }
 
