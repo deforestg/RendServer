@@ -10,7 +10,7 @@
 #include <syslog.h>
 #include <boost/asio.hpp>
 
-#define DEBUG false
+#define DEBUG true
 
 int daemonize() {
 	// Fork the process and have the parent exit. If the process was started

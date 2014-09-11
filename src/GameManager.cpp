@@ -21,6 +21,7 @@ GameManager::GameManager(boost::asio::io_service& ioService) {
 	this->ioService = &ioService;
     tcpServer = new TcpServer(ioService, this);
     udpServer = new UdpServer(ioService, this);
+    srand(time(NULL));
 }
 
 /**
@@ -96,14 +97,16 @@ void GameManager::RemovePlayer(int index) {
  * players join over tcp
  * @see TcpServer
  */
-char GameManager::AcceptJoin(string ip) {
+JoinMessage GameManager::AcceptJoin(string ip) {
 
 	pthread_mutex_lock(&playerLock);
+
+	JoinMessage j;
 
 	if (numPlayers == MAX_PLAYERS) {
 		cout << "connection refused" << endl;
 		pthread_mutex_unlock(&playerLock);
-		return 0;
+		return j;
 	}
 
 	players[numPlayers] = new Player(autoIncrementId, ip, &gamestate->playersData[numPlayers]);
@@ -111,7 +114,10 @@ char GameManager::AcceptJoin(string ip) {
 
 	pthread_mutex_unlock(&playerLock);
 
-	return autoIncrementId++;
+	j.playerId = autoIncrementId++;
+	j.spawnpoint = rand() % 10;
+
+	return j;
 }
 
 GameManager::~GameManager() {

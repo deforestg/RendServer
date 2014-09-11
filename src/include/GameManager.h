@@ -15,6 +15,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <stdlib.h>
 
 #include "Player.h"
 
@@ -22,6 +23,12 @@ typedef struct {
 	unsigned int ticker;
 	PlayerData playersData[MAX_PLAYERS];
 } Tick;
+#include "Player.h"
+
+typedef struct {
+	char playerId;
+	char spawnpoint;
+} JoinMessage;
 
 #include "../server/include/TcpServer.h"
 #include "../server/include/UdpServer.h"
@@ -50,7 +57,7 @@ class GameManager {
 		int GetNumPlayers() { return numPlayers; };
 		GameManager(boost::asio::io_service& ioService);
 		void Start();
-		char AcceptJoin(string ip);
+		JoinMessage AcceptJoin(string ip);
 		virtual ~GameManager();
 };
 
