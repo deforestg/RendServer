@@ -88,6 +88,7 @@ void GameManager::RemovePlayer(int index) {
 		numPlayers--;
 	} else {
 		players[index] = players[--numPlayers];
+		gamestate->playersData[index] = gamestate->playersData[numPlayers];
 	}
 
 	pthread_mutex_unlock(&playerLock);
@@ -112,10 +113,10 @@ JoinMessage GameManager::AcceptJoin(string ip) {
 	players[numPlayers] = new Player(autoIncrementId, ip, &gamestate->playersData[numPlayers]);
 	numPlayers++;
 
-	pthread_mutex_unlock(&playerLock);
-
 	j.playerId = autoIncrementId++;
 	j.spawnpoint = rand() % 10;
+
+	pthread_mutex_unlock(&playerLock);
 
 	return j;
 }
