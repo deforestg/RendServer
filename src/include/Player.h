@@ -8,6 +8,7 @@
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
+#include <string.h>
 #include <string>
 #include <sys/time.h>
 

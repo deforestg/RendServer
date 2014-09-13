@@ -19,6 +19,7 @@ Player::Player(char id, string ip, PlayerData* dataStruct)
 void Player::update(PlayerData* newData)
 {
 	char playerId = data->id;
+	memcpy(data, newData, sizeof(PlayerData));
 	data->id = playerId;	// client cannot change their id
 	gettimeofday(&updated, NULL);
 }
