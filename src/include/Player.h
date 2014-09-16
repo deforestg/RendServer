@@ -34,6 +34,7 @@ class Player
 	public:
 		Player(char id, string ip, PlayerData* dataStruct);
 		void update(PlayerData* newData);
+		void setData(PlayerData* playerData);
 		PlayerData* getData();
 		string getIp() { return ip; }
 		timeval* LastUpdated() { return &updated; }

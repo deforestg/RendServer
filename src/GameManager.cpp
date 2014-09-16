@@ -48,6 +48,7 @@ void* GameManager::RunHelper(void *context)
 
 void GameManager::Run() {
 	timeval start, end;
+	int sleep;
 
 	for (;;) {
 		gettimeofday(&start, NULL);
@@ -57,7 +58,7 @@ void GameManager::Run() {
 		}
 
 		gettimeofday(&end, NULL);
-		int sleep = (1000/RATE) - (end.tv_usec - start.tv_usec);
+		sleep = (1000/RATE) - (end.tv_usec - start.tv_usec);
 		if (sleep > 0) {
 			usleep(sleep * 1000);
 		}
@@ -68,6 +69,7 @@ void GameManager::Run() {
  * checks for player timeouts by comparing last update timestamps to now
  */
 void GameManager::CheckTimeouts(timeval* now) {
+
 	for (int i = 0; i < numPlayers; i++) {
 		timeval* updated = players[i]->LastUpdated();
 
@@ -86,9 +88,14 @@ void GameManager::RemovePlayer(int index) {
 
 	if (index == (numPlayers - 1)) {
 		numPlayers--;
+		delete players[index];
 	} else {
-		players[index] = players[--numPlayers];
+		numPlayers--;
 		gamestate->playersData[index] = gamestate->playersData[numPlayers];
+		delete players[index];
+		players[index] = players[numPlayers];
+		// have to relink the PlayerData
+		players[index]->setData(&gamestate->playersData[index]);
 	}
 
 	pthread_mutex_unlock(&playerLock);

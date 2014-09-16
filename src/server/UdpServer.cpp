@@ -46,7 +46,12 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 
 		PlayerData* update = (PlayerData*) buffer.data();
 
-		for (int i = 0; i < gm->GetNumPlayers(); i++) {
+		pthread_mutex_t* playerLock = gm->GetPlayerLock();
+		pthread_mutex_lock(playerLock);
+
+		int numPlayers = gm->GetNumPlayers();
+
+		for (int i = 0; i < numPlayers; i++) {
 			string playerIp = players[i]->getIp();
 
 			if (playerIp.compare(currentIp) == 0 && update->id == players[i]->getData()->id) {	//found, now update
@@ -59,6 +64,7 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 				break;
 			}
 		}
+		pthread_mutex_unlock(playerLock);
 
 		char* px;
 		int sendLen;
@@ -67,7 +73,7 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 			sendLen = 1;
 		} else {
 			px = reinterpret_cast<char*>(tick);
-			sendLen = sizeof(unsigned int) + sizeof(PlayerData)*gm->GetNumPlayers();
+			sendLen = sizeof(unsigned int) + sizeof(PlayerData)*numPlayers;
 		}
 
 		socket->async_send_to(
