@@ -31,10 +31,14 @@ class Player
 		timeval updated;
 		PlayerData* data;
 		string ip;// 45 chars (bytes) is max ipv6 length
+		char alive;
 	public:
 		Player(char id, string ip, PlayerData* dataStruct);
 		void update(PlayerData* newData);
 		void setData(PlayerData* playerData);
+		void kill();
+		void spawn();
+		char isAlive() { return alive; };
 		PlayerData* getData();
 		string getIp() { return ip; }
 		timeval* LastUpdated() { return &updated; }

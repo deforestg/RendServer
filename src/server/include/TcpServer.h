@@ -21,6 +21,8 @@
 
 using boost::asio::ip::tcp;
 
+enum { JOIN, RESPAWN, LEAVE };
+
 class GameManager;
 
 class TcpServer

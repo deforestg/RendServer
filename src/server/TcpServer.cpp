@@ -31,12 +31,49 @@ void TcpServer::startAccept()
 
 void TcpServer::handleAccept(TcpConnection::pointer newConnection, const boost::system::error_code& error)
 {
-	if (!error) {
-		JoinMessage jmsg = gm->AcceptJoin(newConnection->getSocket().remote_endpoint().address().to_string());
-
-		char* px = reinterpret_cast<char*>(&jmsg);
-		newConnection->Start(px, sizeof(jmsg));
+	if (error) {
+		startAccept();
 	}
+
+	boost::array<char, 1024> buffer;
+	boost::system::error_code readError;
+
+	size_t len = newConnection->getSocket().read_some(boost::asio::buffer(buffer), readError);
+
+	if (readError == boost::asio::error::eof) {
+		cout << "connection terminated" << endl;
+		startAccept();
+		return; // Connection closed cleanly by peer.
+	} else if (error || len < 1) {
+		//throw boost::system::system_error(error); // Some other error. TODO: logging
+		startAccept();
+	}
+
+	string ip = newConnection->getSocket().remote_endpoint().address().to_string();
+	int sendSize = 0;
+	char* px;
+	JoinMessage jmsg;
+
+	switch (buffer[0]) {
+		case JOIN:
+			jmsg = gm->AcceptJoin(ip);
+
+			px = reinterpret_cast<char*>(&jmsg);
+			sendSize = sizeof(jmsg);
+			break;
+		case RESPAWN:
+			jmsg = gm->Respawn(ip, buffer[1]);
+
+			px = reinterpret_cast<char*>(&jmsg);
+			sendSize = sizeof(jmsg);
+			break;
+		case LEAVE:
+			px = new char[1];
+			sendSize = 1;
+			break;
+	}
+
+	newConnection->Start(px, sendSize);
 
 	startAccept();
 }

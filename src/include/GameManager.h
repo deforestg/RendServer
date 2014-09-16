@@ -10,7 +10,7 @@
 
 #define RATE 128		// ticks/s
 #define MAX_PLAYERS 16
-#define TIMEOUT 1		// seconds
+#define TIMEOUT 10		// seconds
 
 #include <sys/time.h>
 #include <unistd.h>
@@ -44,20 +44,25 @@ class GameManager {
 		UdpServer* udpServer;
 		Tick* gamestate;
 		int numPlayers;
+		int numAlivePlayers;
 		char autoIncrementId;
 		Player** players;
 		void CheckTimeouts(timeval* now);
-		void RemovePlayer(int index);
 		static void* RunHelper(void *context);
 		void Run();
+		void SwapPlayers(int index1, int index2);
 	public:
 		Tick* GetGamestate() { return gamestate; }
 		int GetTick() { return gamestate->ticker; }
 		Player** GetPlayers() { return players; };
 		int GetNumPlayers() { return numPlayers; };
+		int GetNumAlivePlayers() { return numAlivePlayers; };
 		pthread_mutex_t* GetPlayerLock() { return &playerLock; };
+		void RemovePlayer(int index);
+		void KillPlayer(int index);
 		GameManager(boost::asio::io_service& ioService);
 		void Start();
+		JoinMessage Respawn(string ip, char playerId);
 		JoinMessage AcceptJoin(string ip);
 		virtual ~GameManager();
 };

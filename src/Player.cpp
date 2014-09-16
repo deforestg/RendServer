@@ -13,6 +13,7 @@ Player::Player(char id, string ip, PlayerData* playerData)
 	data = playerData;
 	data->id = id;
 	data->health = 100;
+	alive = 1;
 	gettimeofday(&updated, NULL);
 }
 
@@ -32,4 +33,15 @@ PlayerData* Player::getData()
 void Player::setData(PlayerData* playerData)
 {
 	data = playerData;
+}
+
+void Player::kill()
+{
+	alive = 0;
+}
+
+void Player::spawn()
+{
+	alive = 1;
+	data->health = 100;
 }

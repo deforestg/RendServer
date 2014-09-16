@@ -49,7 +49,7 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 		pthread_mutex_t* playerLock = gm->GetPlayerLock();
 		pthread_mutex_lock(playerLock);
 
-		int numPlayers = gm->GetNumPlayers();
+		int numPlayers = gm->GetNumAlivePlayers();
 
 		for (int i = 0; i < numPlayers; i++) {
 			string playerIp = players[i]->getIp();
@@ -58,13 +58,19 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 				current = players[i];
 
 				if (bytes_transferred == sizeof(PlayerData)) {
-					players[i]->update(update);
+					if (players[i]->isAlive() && update->health == 0) {
+						pthread_mutex_unlock(playerLock);	// need to let game manager have the lock
+						gm->KillPlayer(i);
+						pthread_mutex_lock(playerLock);
+						numPlayers = gm->GetNumAlivePlayers();	//will be at least one less now
+					} else {
+						players[i]->update(update);
+					}
 				}
 
 				break;
 			}
 		}
-		pthread_mutex_unlock(playerLock);
 
 		char* px;
 		int sendLen;
@@ -75,6 +81,8 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 			px = reinterpret_cast<char*>(tick);
 			sendLen = sizeof(unsigned int) + sizeof(PlayerData)*numPlayers;
 		}
+
+		pthread_mutex_unlock(playerLock);
 
 		socket->async_send_to(
 			boost::asio::buffer(px, sendLen),
