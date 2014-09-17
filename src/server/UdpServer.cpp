@@ -49,26 +49,24 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 		pthread_mutex_t* playerLock = gm->GetPlayerLock();
 		pthread_mutex_lock(playerLock);
 
-		int numPlayers = gm->GetNumAlivePlayers();
+		int numPlayers = gm->GetNumPlayers();
 
-		for (int i = 0; i < numPlayers; i++) {
-			string playerIp = players[i]->getIp();
+		if (bytes_transferred == sizeof(PlayerData)) {
 
-			if (playerIp.compare(currentIp) == 0 && update->id == players[i]->getData()->id) {	//found, now update
-				current = players[i];
+			for (int i = 0; i < numPlayers; i++) {
+				if (players[i]->getIp().compare(currentIp) == 0 && update->id == players[i]->getData()->id) {	//found, now update
+					current = players[i];
 
-				if (bytes_transferred == sizeof(PlayerData)) {
 					if (players[i]->isAlive() && update->health == 0) {
 						pthread_mutex_unlock(playerLock);	// need to let game manager have the lock
 						gm->KillPlayer(i);
 						pthread_mutex_lock(playerLock);
-						numPlayers = gm->GetNumAlivePlayers();	//will be at least one less now
 					} else {
 						players[i]->update(update);
 					}
-				}
 
-				break;
+					break;
+				}
 			}
 		}
 
@@ -79,7 +77,7 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
 			sendLen = 1;
 		} else {
 			px = reinterpret_cast<char*>(tick);
-			sendLen = sizeof(unsigned int) + sizeof(PlayerData)*numPlayers;
+			sendLen = sizeof(unsigned int) + sizeof(PlayerData)*gm->GetNumAlivePlayers();
 		}
 
 		pthread_mutex_unlock(playerLock);

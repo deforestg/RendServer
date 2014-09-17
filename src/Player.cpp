@@ -38,10 +38,13 @@ void Player::setData(PlayerData* playerData)
 void Player::kill()
 {
 	alive = 0;
+	data->health = 0;
+	gettimeofday(&updated, NULL);
 }
 
 void Player::spawn()
 {
 	alive = 1;
 	data->health = 100;
+	gettimeofday(&updated, NULL);
 }

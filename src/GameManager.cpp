@@ -118,6 +118,11 @@ void GameManager::KillPlayer(int index) {
 	players[index]->kill();
 	numAlivePlayers--;
 
+	if (index >= numAlivePlayers) { // already ordered
+		pthread_mutex_unlock(&playerLock);
+		return;
+	}
+
 	// swap player with first alive
 	for (int i = numAlivePlayers; i >= 0; i--) {
 		if (players[i]->isAlive()) {
@@ -151,8 +156,10 @@ JoinMessage GameManager::Respawn(string ip, char playerId) {
 
 	cout << "respawning player " << (int)players[index]->getData()->id << endl;
 
+	if (!players[index]->isAlive()) {
+		numAlivePlayers++;
+	}
 	players[index]->spawn();
-	numAlivePlayers++;
 
 	// swap player with first dead
 	for (int i = 0; i < numPlayers; i++) {
@@ -179,10 +186,10 @@ void GameManager::SwapPlayers(int index1, int index2) {
 	// swap the actual data
 	PlayerData tempData = gamestate->playersData[index1];
 	gamestate->playersData[index1] = gamestate->playersData[index2];
-	gamestate->playersData[index1] = tempData;
+	gamestate->playersData[index2] = tempData;
 	// relink the PlayerData
-	players[index1]->setData(&gamestate->playersData[index2]);
-	players[index2]->setData(&gamestate->playersData[index1]);
+	players[index1]->setData(&gamestate->playersData[index1]);
+	players[index2]->setData(&gamestate->playersData[index2]);
 }
 
 /**
@@ -202,8 +209,19 @@ JoinMessage GameManager::AcceptJoin(string ip) {
 	}
 
 	players[numPlayers] = new Player(autoIncrementId, ip, &gamestate->playersData[numPlayers]);
+
+	// swap player with first dead
+	for (int i = 0; i < numPlayers; i++) {
+		if (!players[i]->isAlive()) {
+			cout << "swapping " << numPlayers << " and " << i << endl;
+			SwapPlayers(numPlayers, i);
+			break;
+		}
+	}
+
 	numPlayers++;
 	numAlivePlayers++;
+
 
 	j.playerId = autoIncrementId++;
 	j.spawnpoint = rand() % 10;
