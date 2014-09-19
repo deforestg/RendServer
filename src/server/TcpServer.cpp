@@ -52,26 +52,22 @@ void TcpServer::handleAccept(TcpConnection::pointer newConnection, const boost::
 	string ip = newConnection->getSocket().remote_endpoint().address().to_string();
 	int sendSize = 0;
 	char* px;
-	JoinMessage jmsg;
+	ServerMessage msg;
 
 	switch (buffer[0]) {
 		case JOIN:
-			jmsg = gm->AcceptJoin(ip);
-
-			px = reinterpret_cast<char*>(&jmsg);
-			sendSize = sizeof(jmsg);
+			msg = gm->AcceptJoin(ip);
 			break;
 		case RESPAWN:
-			jmsg = gm->Respawn(ip, buffer[1]);
-
-			px = reinterpret_cast<char*>(&jmsg);
-			sendSize = sizeof(jmsg);
+			msg = gm->Respawn(ip, buffer[1]);
 			break;
 		case LEAVE:
-			px = new char[1];
-			sendSize = 1;
+			msg = gm->Leave(ip, buffer[1]);
 			break;
 	}
+
+	px = reinterpret_cast<char*>(&msg);
+	sendSize = sizeof(msg);
 
 	newConnection->Start(px, sendSize);
 

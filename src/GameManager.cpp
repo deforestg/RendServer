@@ -11,13 +11,12 @@
  * initialize game data and udp and tcp listeners
  */
 GameManager::GameManager(boost::asio::io_service& ioService) {
+	gm = this;
+    pm = new PlayerManager(gamestate, &playerLock);
+
 	autoIncrementId = 1;
 	gamestate = new Tick();
 	gamestate->ticker = 0;
-
-	numPlayers = 0;
-	numAlivePlayers = 0;
-	players = new Player*[MAX_PLAYERS];
 
 	this->ioService = &ioService;
     tcpServer = new TcpServer(ioService, this);
@@ -41,8 +40,7 @@ void GameManager::Start() {
 	}
 }
 
-void* GameManager::RunHelper(void *context)
-{
+void* GameManager::RunHelper(void *context) {
     ((GameManager *)context)->Run();
     return NULL;
 }
@@ -55,7 +53,7 @@ void GameManager::Run() {
 		gettimeofday(&start, NULL);
 
 		if (gamestate->ticker++ % RATE == 0) {	// check every second for timeouts
-			CheckTimeouts(&start);
+			pm->CheckTimeouts(&start);
 		}
 
 		gettimeofday(&end, NULL);
@@ -66,175 +64,52 @@ void GameManager::Run() {
 	}
 }
 
-/**
- * checks for player timeouts by comparing last update timestamps to now
- */
-void GameManager::CheckTimeouts(timeval* now) {
+ServerMessage GameManager::Leave(string ip, char playerId) {
+	ServerMessage msg;
 
-	for (int i = 0; i < numPlayers; i++) {
-		timeval* updated = players[i]->LastUpdated();
+	pm->RemovePlayer(ip, playerId);
 
-		if (now->tv_sec - updated->tv_sec >= TIMEOUT) {
-			cout << "removing player " << (int)players[i]->getData()->id << endl;
-			RemovePlayer(i);
-		}
-	}
+	return msg;
 }
 
-/**
- * keeps the players array coalesced
- */
-void GameManager::RemovePlayer(int index) {
+ServerMessage GameManager::Respawn(string ip, char playerId) {
+	ServerMessage msg;
 
-	pthread_mutex_lock(&playerLock);
-
-	if (players[index]->isAlive()) {
-		numAlivePlayers--;
+	if (pm->Spawn(ip, playerId) < 0) {	// not found
+		return msg;
 	}
 
-	if (index == (numPlayers - 1)) {
-		numPlayers--;
-		delete players[index];
-	} else {
-		numPlayers--;
-		gamestate->playersData[index] = gamestate->playersData[numPlayers];
-		delete players[index];
-		players[index] = players[numPlayers];
-		// have to relink the PlayerData
-		players[index]->setData(&gamestate->playersData[index]);
-	}
+	msg.type = RESPAWN;
+	msg.playerId = playerId;
+	msg.spawnpoint = rand() % 10;
 
-	pthread_mutex_unlock(&playerLock);
-}
-
-/**
- * keeps the players array as alive first, then dead
- */
-void GameManager::KillPlayer(int index) {
-
-	pthread_mutex_lock(&playerLock);
-
-	cout << "killing player " << (int)players[index]->getData()->id << endl;
-	players[index]->kill();
-	numAlivePlayers--;
-
-	if (index >= numAlivePlayers) { // already ordered
-		pthread_mutex_unlock(&playerLock);
-		return;
-	}
-
-	// swap player with first alive
-	for (int i = numAlivePlayers; i >= 0; i--) {
-		if (players[i]->isAlive()) {
-			if (index != i) {	// no need
-				SwapPlayers(index, i);
-			}
-			break;
-		}
-	}
-
-	pthread_mutex_unlock(&playerLock);
-}
-
-JoinMessage GameManager::Respawn(string ip, char playerId) {
-	JoinMessage j;
-	int index = -1;
-
-	pthread_mutex_lock(&playerLock);
-
-	for (int i = 0; i < numPlayers; i++) {
-		if (players[i]->getIp().compare(ip) == 0 && players[i]->getData()->id == playerId) {
-			index = i;
-			break;
-		}
-	}
-
-	if (index == -1) {	// not found
-		pthread_mutex_unlock(&playerLock);
-		return j;
-	}
-
-	cout << "respawning player " << (int)players[index]->getData()->id << endl;
-
-	if (!players[index]->isAlive()) {
-		numAlivePlayers++;
-	}
-	players[index]->spawn();
-
-	// swap player with first dead
-	for (int i = 0; i < numPlayers; i++) {
-		if (!players[i]->isAlive()) {
-			if (index != i) {	// no need
-				SwapPlayers(index, i);
-			}
-			break;
-		}
-	}
-
-	j.playerId = playerId;
-	j.spawnpoint = rand() % 10;
-
-	pthread_mutex_unlock(&playerLock);
-
-	return j;
-}
-
-void GameManager::SwapPlayers(int index1, int index2) {
-	Player* temp = players[index1];
-	players[index1] = players[index2];
-	players[index2] = temp;
-	// swap the actual data
-	PlayerData tempData = gamestate->playersData[index1];
-	gamestate->playersData[index1] = gamestate->playersData[index2];
-	gamestate->playersData[index2] = tempData;
-	// relink the PlayerData
-	players[index1]->setData(&gamestate->playersData[index1]);
-	players[index2]->setData(&gamestate->playersData[index2]);
+	return msg;
 }
 
 /**
  * players join over tcp
  * @see TcpServer
  */
-JoinMessage GameManager::AcceptJoin(string ip) {
+ServerMessage GameManager::AcceptJoin(string ip) {
+	ServerMessage msg;
 
-	pthread_mutex_lock(&playerLock);
-
-	JoinMessage j;
-
-	if (numPlayers == MAX_PLAYERS) {
+	if (pm->GetNumPlayers() == MAX_PLAYERS) {
 		cout << "connection refused" << endl;
-		pthread_mutex_unlock(&playerLock);
-		return j;
+		return msg;
 	}
 
-	players[numPlayers] = new Player(autoIncrementId, ip, &gamestate->playersData[numPlayers]);
+	pm->AddPlayer(autoIncrementId, ip);
 
-	// swap player with first dead
-	for (int i = 0; i < numPlayers; i++) {
-		if (!players[i]->isAlive()) {
-			cout << "swapping " << numPlayers << " and " << i << endl;
-			SwapPlayers(numPlayers, i);
-			break;
-		}
-	}
+	msg.playerId = autoIncrementId++;
+	msg.spawnpoint = rand() % 10;
 
-	numPlayers++;
-	numAlivePlayers++;
-
-
-	j.playerId = autoIncrementId++;
-	j.spawnpoint = rand() % 10;
-
-	pthread_mutex_unlock(&playerLock);
-
-	return j;
+	return msg;
 }
 
 GameManager::~GameManager() {
 	delete tcpServer;
 	delete udpServer;
-	delete players;
+	delete pm;
 	pthread_mutex_destroy(&playerLock);
 }
 

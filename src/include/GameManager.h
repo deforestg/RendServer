@@ -23,13 +23,16 @@ typedef struct {
 	unsigned int ticker;
 	PlayerData playersData[MAX_PLAYERS];
 } Tick;
-#include "Player.h"
+
+enum { JOIN, RESPAWN, LEAVE };
 
 typedef struct {
+	char type;
 	char playerId;
 	char spawnpoint;
-} JoinMessage;
+} ServerMessage;
 
+#include "PlayerManager.h"
 #include "../server/include/TcpServer.h"
 #include "../server/include/UdpServer.h"
 
@@ -38,32 +41,29 @@ class UdpServer;
 
 class GameManager {
 	private:
+		static GameManager* gm;
 		pthread_mutex_t playerLock;
 		boost::asio::io_service* ioService;
 		TcpServer* tcpServer;
 		UdpServer* udpServer;
 		Tick* gamestate;
-		int numPlayers;
-		int numAlivePlayers;
 		char autoIncrementId;
-		Player** players;
-		void CheckTimeouts(timeval* now);
-		static void* RunHelper(void *context);
+		PlayerManager* pm;
+
 		void Run();
-		void SwapPlayers(int index1, int index2);
+		static void* RunHelper(void *context);
 	public:
+		void Start();
+		ServerMessage Respawn(string ip, char playerId);
+		ServerMessage Leave(string ip, char playerId);
+		ServerMessage AcceptJoin(string ip);
+
 		Tick* GetGamestate() { return gamestate; }
 		int GetTick() { return gamestate->ticker; }
-		Player** GetPlayers() { return players; };
-		int GetNumPlayers() { return numPlayers; };
-		int GetNumAlivePlayers() { return numAlivePlayers; };
 		pthread_mutex_t* GetPlayerLock() { return &playerLock; };
-		void RemovePlayer(int index);
-		void KillPlayer(int index);
+
+		static GameManager* GetInstance() { return gm; };
 		GameManager(boost::asio::io_service& ioService);
-		void Start();
-		JoinMessage Respawn(string ip, char playerId);
-		JoinMessage AcceptJoin(string ip);
 		virtual ~GameManager();
 };
 
