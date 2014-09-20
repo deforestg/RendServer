@@ -7,9 +7,9 @@
 
 #include "include/UdpServer.h"
 
-UdpServer::UdpServer(boost::asio::io_service& ioService, GameManager* gm) {
-	pm = PlayerManager::GetInstance();
-	this->gm = gm;
+UdpServer::UdpServer(boost::asio::io_service& ioService) {
+	gm = &GameManager::GetInstance();
+	pm = &PlayerManager::GetInstance();
 	tick = gm->GetGamestate();
 	socket = new udp::socket(ioService, udp::endpoint(udp::v4(), 18206));
 	startReceive();

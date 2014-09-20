@@ -7,8 +7,8 @@
 
 #include "include/TcpServer.h"
 
-TcpServer::TcpServer(boost::asio::io_service& ioService, GameManager* gm) {
-	this->gm = gm;
+TcpServer::TcpServer(boost::asio::io_service& ioService) {
+	this->gm = &GameManager::GetInstance();
 	acceptor = new tcp::acceptor(ioService, tcp::endpoint(tcp::v4(), 18206));
 
 	startAccept();

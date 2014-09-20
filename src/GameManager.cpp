@@ -10,17 +10,17 @@
 /**
  * initialize game data and udp and tcp listeners
  */
-GameManager::GameManager(boost::asio::io_service& ioService) {
-	gm = this;
-    pm = new PlayerManager(gamestate, &playerLock);
+void GameManager::init(boost::asio::io_service& ioService) {
+    pm = &PlayerManager::GetInstance();
+    pm->init(gamestate, &playerLock);
 
 	autoIncrementId = 1;
 	gamestate = new Tick();
 	gamestate->ticker = 0;
 
 	this->ioService = &ioService;
-    tcpServer = new TcpServer(ioService, this);
-    udpServer = new UdpServer(ioService, this);
+    tcpServer = new TcpServer(ioService);
+    udpServer = new UdpServer(ioService);
     srand(time(NULL));
 }
 
@@ -109,7 +109,6 @@ ServerMessage GameManager::AcceptJoin(string ip) {
 GameManager::~GameManager() {
 	delete tcpServer;
 	delete udpServer;
-	delete pm;
 	pthread_mutex_destroy(&playerLock);
 }
 

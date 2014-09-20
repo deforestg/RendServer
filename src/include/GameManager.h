@@ -41,17 +41,20 @@ class UdpServer;
 
 class GameManager {
 	private:
-		static GameManager* gm;
+		PlayerManager* pm;
 		pthread_mutex_t playerLock;
 		boost::asio::io_service* ioService;
 		TcpServer* tcpServer;
 		UdpServer* udpServer;
 		Tick* gamestate;
 		char autoIncrementId;
-		PlayerManager* pm;
 
 		void Run();
 		static void* RunHelper(void *context);
+		GameManager(GameManager const&);		// Don't Implement.
+        void operator = (GameManager const&);	// Don't implement
+        GameManager() {};
+		virtual ~GameManager();
 	public:
 		void Start();
 		ServerMessage Respawn(string ip, char playerId);
@@ -62,9 +65,11 @@ class GameManager {
 		int GetTick() { return gamestate->ticker; }
 		pthread_mutex_t* GetPlayerLock() { return &playerLock; };
 
-		static GameManager* GetInstance() { return gm; };
-		GameManager(boost::asio::io_service& ioService);
-		virtual ~GameManager();
+		void init(boost::asio::io_service& ioService);
+		static GameManager& GetInstance() {
+	    	static GameManager gm;
+	    	return gm;
+		}
 };
 
 

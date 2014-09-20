@@ -27,8 +27,6 @@ class PlayerManager;
 
 class UdpServer
 {
-	public:
-		UdpServer(boost::asio::io_service& ioService, GameManager* gm);
 	private:
 		GameManager* gm;
 		PlayerManager* pm;
@@ -42,6 +40,8 @@ class UdpServer
 			const boost::system::error_code& /*error*/,
 			std::size_t /*bytes_transferred*/
 		);
+	public:
+		UdpServer(boost::asio::io_service& ioService);
 };
 
 

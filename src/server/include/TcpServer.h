@@ -25,13 +25,13 @@ class GameManager;
 
 class TcpServer
 {
-	public:
-		TcpServer(boost::asio::io_service& ioService, GameManager* gm);
 	private:
 		GameManager* gm;
 		void startAccept();
 		tcp::acceptor* acceptor;
 		void handleAccept(TcpConnection::pointer newConnection, const boost::system::error_code& error);
+	public:
+		TcpServer(boost::asio::io_service& ioService);
 };
 
 

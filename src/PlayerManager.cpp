@@ -7,9 +7,7 @@
 
 #include "include/PlayerManager.h"
 
-PlayerManager::PlayerManager(Tick* gamestate, pthread_mutex_t* playerLock) {
-	pm = this;
-
+void PlayerManager::init(Tick* gamestate, pthread_mutex_t* playerLock) {
 	this->gamestate = gamestate;
 	this->playerLock = playerLock;
 	numPlayers = 0;

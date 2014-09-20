@@ -15,7 +15,6 @@ using namespace std;
 
 class PlayerManager {
 	private:
-		static PlayerManager* pm;
 		pthread_mutex_t* playerLock;
 		Player** players;
 		int numPlayers;
@@ -23,6 +22,10 @@ class PlayerManager {
 		Tick* gamestate;
 		void RemovePlayer(int index);
 		void SwapPlayers(int index1, int index2);
+		PlayerManager(PlayerManager const&);		// Don't Implement.
+        void operator = (PlayerManager const&);	// Don't implement
+        PlayerManager() {};
+		virtual ~PlayerManager();
 	public:
 		void KillPlayer(int index); //TODO: make private, remove from UdpServer
 		Player** GetPlayers() { return players; };
@@ -36,9 +39,11 @@ class PlayerManager {
 		int GetNumPlayers() { return numPlayers; };
 		int GetNumAlivePlayers() { return numAlivePlayers; };
 
-		static PlayerManager* GetInstance() { return pm; };
-		PlayerManager(Tick* gamestate, pthread_mutex_t* playerLock);
-		virtual ~PlayerManager();
+		void init(Tick* gamestate, pthread_mutex_t* playerLock);
+		static PlayerManager& GetInstance() {
+			static PlayerManager pm;
+			return pm;
+		};
 };
 
 #endif /* PLAYERMANAGER_H_ */

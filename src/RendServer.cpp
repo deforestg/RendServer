@@ -85,7 +85,8 @@ int main() {
 	try {
 		boost::asio::io_service ioService;
 
-		GameManager* game = new GameManager(ioService);
+		GameManager* game = &GameManager::GetInstance();
+		game->init(ioService);
 
 		if (DEBUG) {
 			game->Start();
