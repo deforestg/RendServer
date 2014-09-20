@@ -48,7 +48,7 @@ void PlayerManager::CheckTimeouts(timeval* now) {
 		timeval* updated = players[i]->LastUpdated();
 
 		if (now->tv_sec - updated->tv_sec >= TIMEOUT) {
-			cout << "removing player " << (int)players[i]->getData()->id << endl;
+			cout << "timing out player " << (int)players[i]->getData()->id << endl;
 			RemovePlayer(i);
 		}
 	}
@@ -75,6 +75,8 @@ void PlayerManager::AddPlayer(char id, string ip) {
 }
 
 int PlayerManager::RemovePlayer(string ip, char playerId) {
+	cout << "removing player " << (int)playerId << endl;
+
 	int index = GetPlayerIndex(ip, playerId);
 
 	if (index < 0) {

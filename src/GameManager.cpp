@@ -11,14 +11,14 @@
  * initialize game data and udp and tcp listeners
  */
 void GameManager::init(boost::asio::io_service& ioService) {
-    pm = &PlayerManager::GetInstance();
-    pm->init(gamestate, &playerLock);
-
+	this->ioService = &ioService;
 	autoIncrementId = 1;
 	gamestate = new Tick();
 	gamestate->ticker = 0;
 
-	this->ioService = &ioService;
+    pm = &PlayerManager::GetInstance();
+    pm->init(gamestate, &playerLock);
+
     tcpServer = new TcpServer(ioService);
     udpServer = new UdpServer(ioService);
     srand(time(NULL));

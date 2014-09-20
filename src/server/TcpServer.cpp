@@ -9,6 +9,7 @@
 
 TcpServer::TcpServer(boost::asio::io_service& ioService) {
 	this->gm = &GameManager::GetInstance();
+
 	acceptor = new tcp::acceptor(ioService, tcp::endpoint(tcp::v4(), 18206));
 
 	startAccept();
@@ -47,6 +48,7 @@ void TcpServer::handleAccept(TcpConnection::pointer newConnection, const boost::
 	} else if (error || len < 1) {
 		//throw boost::system::system_error(error); // Some other error. TODO: logging
 		startAccept();
+		return;
 	}
 
 	string ip = newConnection->getSocket().remote_endpoint().address().to_string();
