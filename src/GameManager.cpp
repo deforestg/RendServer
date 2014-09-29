@@ -8,16 +8,18 @@
 #include "include/GameManager.h"
 
 /**
- * initialize game data and udp and tcp listeners
+ * initialize game data, player manager, and udp and tcp listeners
+ * @param boost::asio::io_service& ioService
  */
 void GameManager::init(boost::asio::io_service& ioService) {
 	this->ioService = &ioService;
 	autoIncrementId = 1;
 	gamestate = new Tick();
 	gamestate->ticker = 0;
+	gameStatus = new ServerMessage();
 
     pm = &PlayerManager::GetInstance();
-    pm->init(gamestate, &playerLock);
+    pm->init(gamestate, gameStatus, &playerLock);
 
     tcpServer = new TcpServer(ioService);
     udpServer = new UdpServer(ioService);
@@ -45,6 +47,9 @@ void* GameManager::RunHelper(void *context) {
     return NULL;
 }
 
+/**
+ * main game loop, 128 tick
+ */
 void GameManager::Run() {
 	timeval start, end;
 	int sleep;
@@ -64,46 +69,53 @@ void GameManager::Run() {
 	}
 }
 
-ServerMessage GameManager::Leave(string ip, char playerId) {
-	ServerMessage msg;
-
+/**
+ * @param string ip
+ * @param char playerId
+ * @return ServerMessage*
+ */
+ServerMessage* GameManager::Leave(string ip, char playerId) {
 	pm->RemovePlayer(ip, playerId);
 
-	return msg;
+	return gameStatus;
 }
 
-ServerMessage GameManager::Respawn(string ip, char playerId) {
-	ServerMessage msg;
-
+/**
+ * @param string ip
+ * @param char playerId
+ * @return ServerMessage*
+ */
+ServerMessage* GameManager::Respawn(string ip, char playerId) {
 	if (pm->Spawn(ip, playerId) < 0) {	// not found
-		return msg;
+		gameStatus->playerId = 0;
+		return gameStatus;
 	}
 
-	msg.type = RESPAWN;
-	msg.playerId = playerId;
-	msg.spawnpoint = rand() % 10;
+	gameStatus->type = RESPAWN;
+	gameStatus->playerId = playerId;
+	gameStatus->spawnpoint = rand() % 10;
 
-	return msg;
+	return gameStatus;
 }
 
 /**
  * players join over tcp
  * @see TcpServer
+ * @return ServerMessage*
  */
-ServerMessage GameManager::AcceptJoin(string ip) {
-	ServerMessage msg;
-
+ServerMessage* GameManager::AcceptJoin(string ip) {
 	if (pm->GetNumPlayers() == MAX_PLAYERS) {
 		cout << "connection refused" << endl;
-		return msg;
+		gameStatus->playerId = 0;
+		return gameStatus;
 	}
 
-	pm->AddPlayer(autoIncrementId, ip);
+	pm->AddPlayer(ip, autoIncrementId);
 
-	msg.playerId = autoIncrementId++;
-	msg.spawnpoint = rand() % 10;
+	gameStatus->playerId = autoIncrementId++;
+	gameStatus->spawnpoint = rand() % 10;
 
-	return msg;
+	return gameStatus;
 }
 
 GameManager::~GameManager() {

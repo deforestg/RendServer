@@ -24,12 +24,13 @@ typedef struct {
 	PlayerData playersData[MAX_PLAYERS];
 } Tick;
 
-enum { JOIN, RESPAWN, LEAVE };
+enum { JOIN, RESPAWN, LEAVE, STATUS };
 
 typedef struct {
 	char type;
 	char playerId;
 	char spawnpoint;
+	PlayerStatus playersStatus[MAX_PLAYERS];
 } ServerMessage;
 
 #include "PlayerManager.h"
@@ -47,6 +48,7 @@ class GameManager {
 		TcpServer* tcpServer;
 		UdpServer* udpServer;
 		Tick* gamestate;
+		ServerMessage* gameStatus;
 		char autoIncrementId;
 
 		void Run();
@@ -57,9 +59,10 @@ class GameManager {
 		virtual ~GameManager();
 	public:
 		void Start();
-		ServerMessage Respawn(string ip, char playerId);
-		ServerMessage Leave(string ip, char playerId);
-		ServerMessage AcceptJoin(string ip);
+		ServerMessage *Respawn(string ip, char playerId);
+		ServerMessage *Leave(string ip, char playerId);
+		ServerMessage *AcceptJoin(string ip);
+		ServerMessage* GetGameStatus() { return gameStatus; }
 
 		Tick* GetGamestate() { return gamestate; }
 		int GetTick() { return gamestate->ticker; }

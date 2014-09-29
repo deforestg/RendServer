@@ -54,7 +54,7 @@ void TcpServer::handleAccept(TcpConnection::pointer newConnection, const boost::
 	string ip = newConnection->getSocket().remote_endpoint().address().to_string();
 	int sendSize = 0;
 	char* px;
-	ServerMessage msg;
+	ServerMessage* msg;
 
 	switch (buffer[0]) {
 		case JOIN:
@@ -66,9 +66,13 @@ void TcpServer::handleAccept(TcpConnection::pointer newConnection, const boost::
 		case LEAVE:
 			msg = gm->Leave(ip, buffer[1]);
 			break;
+			break;
+		case STATUS:
+			msg = gm->GetGameStatus();
+			break;
 	}
 
-	px = reinterpret_cast<char*>(&msg);
+	px = reinterpret_cast<char*>(msg);
 	sendSize = sizeof(msg);
 
 	newConnection->Start(px, sendSize);
