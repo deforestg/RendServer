@@ -29,6 +29,10 @@ enum { JOIN, RESPAWN, LEAVE, STATUS };
 typedef struct {
 	char type;
 	char playerId;
+} ClientMessage;
+
+typedef struct {
+	ClientMessage client;
 	char spawnpoint;
 	PlayerStatus playersStatus[MAX_PLAYERS];
 } ServerMessage;

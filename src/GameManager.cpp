@@ -87,12 +87,12 @@ ServerMessage* GameManager::Leave(string ip, char playerId) {
  */
 ServerMessage* GameManager::Respawn(string ip, char playerId) {
 	if (pm->Spawn(ip, playerId) < 0) {	// not found
-		gameStatus->playerId = 0;
+		gameStatus->client.playerId = 0;
 		return gameStatus;
 	}
 
-	gameStatus->type = RESPAWN;
-	gameStatus->playerId = playerId;
+	gameStatus->client.type = RESPAWN;
+	gameStatus->client.playerId = playerId;
 	gameStatus->spawnpoint = rand() % 10;
 
 	return gameStatus;
@@ -106,13 +106,13 @@ ServerMessage* GameManager::Respawn(string ip, char playerId) {
 ServerMessage* GameManager::AcceptJoin(string ip) {
 	if (pm->GetNumPlayers() == MAX_PLAYERS) {
 		cout << "connection refused" << endl;
-		gameStatus->playerId = 0;
+		gameStatus->client.playerId = 0;
 		return gameStatus;
 	}
 
 	pm->AddPlayer(ip, autoIncrementId);
 
-	gameStatus->playerId = autoIncrementId++;
+	gameStatus->client.playerId = autoIncrementId++;
 	gameStatus->spawnpoint = rand() % 10;
 
 	return gameStatus;

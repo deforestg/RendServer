@@ -51,7 +51,7 @@ void TcpServer::handleAccept(TcpConnection::pointer newConnection, const boost::
 		cout << "Error " << readError.value() << readError.message() << endl;
 		startAccept();
 		return;
-	} else if (len < sizeof(ServerMessage)) {
+	} else if (len < sizeof(ClientMessage)) {
 		cout << "Recieved invalid message of size " << len << endl;
 		startAccept();
 		return;
@@ -60,25 +60,26 @@ void TcpServer::handleAccept(TcpConnection::pointer newConnection, const boost::
 	string ip = newConnection->getSocket().remote_endpoint().address().to_string();
 	int sendSize = 0;
 	char* px;
-	ServerMessage* msg = (ServerMessage*) buffer.c_array();
+	ClientMessage* msg = (ClientMessage*) buffer.c_array();
+	ServerMessage* send;
 
 	switch (msg->type) {
 		case JOIN:
-			msg = gm->AcceptJoin(ip);
+			send = gm->AcceptJoin(ip);
 			break;
 		case RESPAWN:
-			msg = gm->Respawn(ip, msg->playerId);
+			send = gm->Respawn(ip, msg->playerId);
 			break;
 		case LEAVE:
-			msg = gm->Leave(ip, msg->playerId);
+			send = gm->Leave(ip, msg->playerId);
 			break;
 		case STATUS:
-			msg = gm->GetGameStatus();
+			send = gm->GetGameStatus();
 			break;
 	}
 
-	px = reinterpret_cast<char*>(msg);
-	sendSize = sizeof(msg);
+	px = reinterpret_cast<char*>(send);
+	sendSize = sizeof(send);
 
 	newConnection->Start(px, sendSize);
 
