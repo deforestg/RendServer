@@ -33,7 +33,9 @@ void TcpServer::startAccept()
 void TcpServer::handleAccept(TcpConnection::pointer newConnection, const boost::system::error_code& error)
 {
 	if (error) {
+		cout << "Error " << error.value() << error.message() << endl; //standard out goes to file
 		startAccept();
+		return;
 	}
 
 	boost::array<char, 1024> buffer;
@@ -45,8 +47,12 @@ void TcpServer::handleAccept(TcpConnection::pointer newConnection, const boost::
 		cout << "connection terminated" << endl;
 		startAccept();
 		return; // Connection closed cleanly by peer.
-	} else if (error || len < 1) {
-		//throw boost::system::system_error(error); // Some other error. TODO: logging
+	} else if (readError) {
+		cout << "Error " << readError.value() << readError.message() << endl;
+		startAccept();
+		return;
+	} else if (len < sizeof(ServerMessage)) {
+		cout << "Recieved invalid message of size " << len << endl;
 		startAccept();
 		return;
 	}
@@ -54,18 +60,17 @@ void TcpServer::handleAccept(TcpConnection::pointer newConnection, const boost::
 	string ip = newConnection->getSocket().remote_endpoint().address().to_string();
 	int sendSize = 0;
 	char* px;
-	ServerMessage* msg;
+	ServerMessage* msg = (ServerMessage*) buffer.c_array();
 
-	switch (buffer[0]) {
+	switch (msg->type) {
 		case JOIN:
 			msg = gm->AcceptJoin(ip);
 			break;
 		case RESPAWN:
-			msg = gm->Respawn(ip, buffer[1]);
+			msg = gm->Respawn(ip, msg->playerId);
 			break;
 		case LEAVE:
-			msg = gm->Leave(ip, buffer[1]);
-			break;
+			msg = gm->Leave(ip, msg->playerId);
 			break;
 		case STATUS:
 			msg = gm->GetGameStatus();

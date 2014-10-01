@@ -151,6 +151,9 @@ void PlayerManager::KillPlayer(int index) {
 	pthread_mutex_lock(playerLock);
 
 	cout << "killing player " << (int)players[index]->getData()->id << endl;
+
+	FindCulprit(players[index]);
+
 	players[index]->kill();
 	numAlivePlayers--;
 
@@ -170,6 +173,23 @@ void PlayerManager::KillPlayer(int index) {
 	}
 
 	pthread_mutex_unlock(playerLock);
+}
+
+/**
+ * finds and rewards the culprit, if any
+ * @param Player* shotPlayer
+ */
+void PlayerManager::FindCulprit(Player* shotPlayer) {
+	PlayerData* data = shotPlayer->getData();
+	if (data->shotBy > 0) {
+		int index = GetPlayerIndex(shotPlayer->getIp(), data->id);
+
+		if (index < 0) {
+			return;
+		}
+
+		players[index]->getStatus()->kills++;
+	}
 }
 
 /**

@@ -23,6 +23,7 @@ typedef struct {
 	char weaponId;
 	unsigned short weaponState;
 	char pullingTrigger;
+	char shotBy;
 } PlayerData;
 
 typedef struct {

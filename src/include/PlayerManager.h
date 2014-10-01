@@ -25,6 +25,7 @@ class PlayerManager {
 		void RemovePlayer(int index);
 		void SwapPlayers(int index1, int index2);
 		int GetPlayerIndex(string ip, char id);
+		void FindCulprit(Player* shotPlayer);
 
 		PlayerManager(PlayerManager const&);		// Don't Implement.
         void operator = (PlayerManager const&);		// Don't implement
