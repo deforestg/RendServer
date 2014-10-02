@@ -79,7 +79,7 @@ void TcpServer::handleAccept(TcpConnection::pointer newConnection, const boost::
 	}
 
 	px = reinterpret_cast<char*>(send);
-	sendSize = sizeof(send);
+	sendSize = sizeof(*send);
 
 	newConnection->Start(px, sendSize);
 
